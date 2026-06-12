@@ -25,3 +25,6 @@ Thumbs.db
 *.bjpl
 *.bjpl.bak
 settings.json
+
+# Packaged release zips
+*.zip

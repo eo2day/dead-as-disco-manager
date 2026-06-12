@@ -1,18 +1,13 @@
-## Development note
-
-This project was developed with substantial help from an AI assistant
-(Anthropic's Claude), including reverse-engineering the game's playlist
-format and writing most of the code. It has been tested by the author but,
-as with any software, use it at your own risk and keep backups of your
-playlists and song files.
-
-
-
 # Dead as Disco — Music Manager
 
 A desktop manager for the rhythm game **Dead as Disco**. Browse and download
 custom songs, manage your installed library, and build in-game playlists —
 all from one app.
+
+> **Unofficial community tool** — not affiliated with the developers of Dead as
+> Disco or with DiscoMaps. Developed with huge AI assistance and bunch of vibe coding as i wanted to simplify life for myself
+
+---
 
 ## Features
 
@@ -24,12 +19,19 @@ all from one app.
   imported songs
 - **Restart the game** from the app to apply changes
 
+---
+
 ## Requirements
 
 - Windows (the game and its file paths are Windows-based)
-- Python 3.10+
+- Python 3.10+ (only needed to run from source — not for the packaged app)
 
-## Setup
+## Install & run
+
+**From the packaged release:** download the app zip from the
+[Releases](../../releases) page, unzip it, and run `DiscoManager.exe`.
+
+**From source:**
 
 ```powershell
 python -m venv .venv
@@ -41,20 +43,113 @@ python main.py
 If PowerShell blocks venv activation, run once:
 `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
-## How playlists work (important)
+---
 
-The game stores playlists as `.bjpl` files and **rewrites them whenever it
-saves**. So:
+# User Guide
 
-- Do all playlist creation/editing in the manager **with the game closed**,
-  then use **Restart game** to launch and apply changes.
-- Playlist creation copies a blueprint playlist named **`Template`**. Create
-  one playlist called exactly `Template` in-game once; the manager uses it as
-  the basis for new playlists and protects it from edits/deletion.
-- The manager only manages **imported** songs in playlists. Playlists
-  containing built-in game songs are left to be edited in-game.
+> **Before you start:** Always do playlist work with the **game closed**. Dead
+> as Disco rewrites its playlist files when it saves, so edits made while the
+> game is open will be lost.
 
-## Building an executable
+## Getting started
+
+On launch, the app opens on the **Browse DiscoMaps** tab and automatically
+finds your game's song folder. You can confirm the detected folder on the
+**Installed** tab — it's shown at the top.
+
+![Main window on first launch](docs/screenshots/01-main-window.png)
+
+If the folder wasn't detected, go to the **Installed** tab, click
+**Change folder…**, and browse to:
+`%LOCALAPPDATA%\Pagoda\Saved\ImportedSongs`
+
+## Browsing and downloading songs
+
+1. Open the **Browse DiscoMaps** tab.
+2. Log in to your DiscoMaps account (only needed once — the app remembers you).
+3. Find a map and download it as normal.
+4. The app detects the download, extracts it, and installs it automatically.
+
+![Browse DiscoMaps tab](docs/screenshots/02-browse-tab.png)
+
+Restart the game to see newly installed songs.
+
+## Managing your installed songs
+
+The **Installed** tab lists every song with its **BPM** and **length**.
+
+![Installed songs tab](docs/screenshots/03-installed-tab.png)
+
+- **Search** by title or artist.
+- **Sort** by artist, title, BPM, or duration, with a **Desc** toggle.
+- **Import .zip…** installs a map file you downloaded manually.
+- To remove songs, **tick the checkboxes** (or use **Check all / none**),
+  then click **Remove checked**.
+
+![Removing songs with checkboxes](docs/screenshots/04-remove-songs.png)
+
+## Restarting the game
+
+Click **Restart game** (Installed tab) to close Dead as Disco and relaunch it.
+Use this after making changes so they take effect.
+
+## Playlists
+
+### One-time setup: the Template
+
+The manager builds new playlists from a blueprint:
+
+1. In the **game**, create a new playlist named exactly **`Template`**
+   (it can be empty).
+2. Fully exit the game.
+3. In the manager, open the **Playlists** tab and click **Rescan**.
+
+The Template is protected — it can't be edited or deleted from the app.
+
+![Playlists tab](docs/screenshots/05-playlists-tab.png)
+
+### Creating a playlist
+
+1. Make sure the game is **closed**.
+2. On the **Playlists** tab, click **New playlist…**
+3. Enter a name.
+4. In the song picker, **tick the songs** you want (search and sort work
+   here too), then click **OK**.
+5. Restart the game to see your new playlist.
+
+![Song picker dialog](docs/screenshots/06-song-picker.png)
+
+### Editing a playlist
+
+Select a playlist, then use the buttons under the song list:
+
+- **Add songs…** — add more songs from your library
+- **Remove** — remove the selected song(s)
+- **↑ / ↓** — reorder songs
+- **Rename…** — change the playlist's name
+- **Save** — write your changes (then restart the game)
+
+> The manager only edits playlists made of **imported** songs. Playlists that
+> contain built-in game songs must be edited in-game.
+
+### Deleting a playlist
+
+Select it and click **Delete playlist**. (The Template can't be deleted here.)
+
+## Tips & troubleshooting
+
+- **Changes don't show in-game?** Restart the game — it only reads playlists
+  and songs at startup.
+- **"Game is running" warning?** Close Dead as Disco before creating or
+  saving playlists, or your changes will be overwritten.
+- **A song you added doesn't appear in-game?** It may be a built-in game song
+  (only imported songs can be added via the manager).
+- **Backups:** the manager saves a `.bjpl.bak` copy the first time it edits a
+  playlist, so your original is preserved.
+
+---
+
+## Building from source
 
 ```powershell
 pip install pyinstaller
@@ -68,5 +163,3 @@ not one-file — the embedded browser needs it). Zip and share that folder.
 
 - Settings and the embedded browser's login/cache are stored in
   `%APPDATA%\DiscoManager`.
-- This is an unofficial, community tool and is not affiliated with the game's
-  developers or with DiscoMaps.
