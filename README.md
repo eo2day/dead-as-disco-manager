@@ -1,11 +1,14 @@
 # Dead as Disco — Music Manager
 
+> [!IMPORTANT]
+> **Unofficial, AI-assisted community tool** — not affiliated with the
+> developers of Dead as Disco or with DiscoMaps. Built largely with AI
+> assistance to simplify my own workflow. Use at your own risk, and keep
+> backups of your playlists and song files.
+
 A desktop manager for the rhythm game **Dead as Disco**. Browse and download
 custom songs, manage your installed library, and build in-game playlists —
 all from one app.
-
-> **Unofficial community tool** — not affiliated with the developers of Dead as
-> Disco or with DiscoMaps. Developed with huge AI assistance and bunch of vibe coding as i wanted to simplify life for myself
 
 ---
 
@@ -47,17 +50,16 @@ If PowerShell blocks venv activation, run once:
 
 # User Guide
 
-> **Before you start:** Always do playlist work with the **game closed**. Dead
-> as Disco rewrites its playlist files when it saves, so edits made while the
-> game is open will be lost.
+> [!WARNING]
+> Always do playlist work with the **game closed**. Dead as Disco rewrites its
+> playlist files when it saves, so edits made while the game is open will be
+> lost.
 
 ## Getting started
 
 On launch, the app opens on the **Browse DiscoMaps** tab and automatically
 finds your game's song folder. You can confirm the detected folder on the
 **Installed** tab — it's shown at the top.
-
-![Main window on first launch](docs/screenshots/01-main-window.png)
 
 If the folder wasn't detected, go to the **Installed** tab, click
 **Change folder…**, and browse to:
@@ -129,6 +131,7 @@ Select a playlist, then use the buttons under the song list:
 - **Rename…** — change the playlist's name
 - **Save** — write your changes (then restart the game)
 
+> [!NOTE]
 > The manager only edits playlists made of **imported** songs. Playlists that
 > contain built-in game songs must be edited in-game.
 
@@ -163,3 +166,10 @@ not one-file — the embedded browser needs it). Zip and share that folder.
 
 - Settings and the embedded browser's login/cache are stored in
   `%APPDATA%\DiscoManager`.
+
+---
+
+> [!IMPORTANT]
+> This is a fan-made tool, not affiliated with or endorsed by the creators of
+> Dead as Disco or DiscoMaps. All custom songs and maps belong to their
+> respective creators. Developed with AI assistance.
