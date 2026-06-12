@@ -101,8 +101,7 @@ Use this after making changes so they take effect.
 
 The manager builds new playlists from a blueprint:
 
-1. In the **game**, create a new playlist named exactly **`Template`**
-   (it can be empty).
+1. In the **game**, create a new playlist named exactly **`Template`** and add one song
 2. Fully exit the game.
 3. In the manager, open the **Playlists** tab and click **Rescan**.
 
