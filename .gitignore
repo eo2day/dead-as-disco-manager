@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Virtual environment
+.venv/
+venv/
+
+# PyInstaller build output
+build/
+dist/
+*.manifest
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# App data / local artifacts (don't commit playlists, songs, or backups)
+*.bjpl
+*.bjpl.bak
+settings.json
