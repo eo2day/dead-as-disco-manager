@@ -28,7 +28,7 @@ class BrowseTab(QWidget):
 
         nav = QHBoxLayout()
         back = QPushButton("◀"); fwd = QPushButton("▶")
-        reload_btn = QPushButton("⟳"); home = QPushButton("Home")
+        reload_btn = QPushButton("⟳"); home = QPushButton("⌂")
         popout = QPushButton("Open in separate window")
         self.status = QLabel("")
         for b in (back, fwd, reload_btn, home):

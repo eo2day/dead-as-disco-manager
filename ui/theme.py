@@ -25,6 +25,17 @@ QTableWidget::item:focus, QListWidget::item:focus {
     border: none;
     outline: 0;
 }
+QListWidget::item {
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+QListWidget::item:hover {
+    background-color: #3a3a3a;
+}
+QListWidget::item:selected {
+    background-color: #7c5cff;
+    color: #ffffff;
+}
 QHeaderView::section {
     background-color: #3a3a3a;
     color: #e0e0e0;
@@ -170,6 +181,17 @@ QLineEdit:focus, QComboBox:focus {
 QTableWidget::item:focus, QListWidget::item:focus {
     border: none;
     outline: 0;
+}
+QListWidget::item {
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+QListWidget::item:hover {
+    background-color: #e0e0e0;
+}
+QListWidget::item:selected {
+    background-color: #6d4fe0;
+    color: #ffffff;
 }
 QHeaderView::section {
     background-color: #e6e6e6;
