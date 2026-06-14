@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from disco import config, importer, playlists, bjpl, game
 from disco.browser import BrowseTab
 from ui.helpers import SORT_OPTIONS, song_label, filter_sort
+from ui import theme
 
 
 class MainWindow(QMainWindow):
@@ -473,6 +474,7 @@ if __name__ == "__main__":
             pass
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
+    theme.apply_theme(app, config.get_theme())
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
