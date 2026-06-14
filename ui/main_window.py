@@ -6,13 +6,15 @@ from pathlib import Path
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget,
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget,
     QLabel, QPushButton, QFileDialog, QListWidget,
     QMessageBox, QTabWidget, QSplitter, QDialog, QDialogButtonBox, QInputDialog,
 )
 
 from disco import config, importer, playlists, bjpl, game
 from disco.browser import BrowseTab
+from ui import theme
+from ui.home import HomePage
 from ui.sidebar import Sidebar
 from ui.song_list import SongListWidget
 
@@ -39,10 +41,9 @@ class MainWindow(QMainWindow):
         sidebar = Sidebar()
         self.stack = QStackedWidget()
 
-        home_page = QWidget()
-        home_layout = QVBoxLayout(home_page)
-        home_layout.addWidget(QLabel("Home — coming soon"))
-        home_layout.addStretch()
+        self.home_page = HomePage()
+        self.home_page.pathsChanged.connect(self._on_paths_changed)
+        self.home_page.themeChanged.connect(self._on_theme_changed)
 
         self.browse = BrowseTab(config.CONFIG_DIR, self)
         self.browse.imported.connect(lambda _m: self.refresh_list())
@@ -51,9 +52,9 @@ class MainWindow(QMainWindow):
         library.addTab(self._build_installed_tab(), "Installed")
         library.addTab(self._build_playlists_tab(), "Playlists")
 
-        self.stack.addWidget(home_page)     # index 0 — Home
-        self.stack.addWidget(self.browse)   # index 1 — Browse
-        self.stack.addWidget(library)       # index 2 — Library
+        self.stack.addWidget(self.home_page)  # index 0 — Home
+        self.stack.addWidget(self.browse)     # index 1 — Browse
+        self.stack.addWidget(library)         # index 2 — Library
         sidebar.pageChanged.connect(self.stack.setCurrentIndex)
 
         central = QWidget()
@@ -114,6 +115,16 @@ class MainWindow(QMainWindow):
         split.setSizes([300, 600])
         root.addWidget(split)
         return w
+
+    # ---------- home page signals ----------
+    def _on_paths_changed(self):
+        self.refresh_list()
+        self.refresh_playlists()
+
+    def _on_theme_changed(self, name):
+        app = QApplication.instance()
+        if app:
+            theme.apply_theme(app, name)
 
     # ---------- helpers ----------
     def _find_template(self):
