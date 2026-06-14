@@ -101,7 +101,7 @@ class BrowseTab(QWidget):
         zip_path = Path(download.downloadDirectory()) / download.downloadFileName()
         target = config.get_imported_songs_path()
         if not target:
-            msg = "Set your ImportedSongs folder first (Installed tab)."
+            msg = "Set your ImportedSongs folder first (Home page)."
             self.status.setText(msg); self.imported.emit(msg); return
         try:
             installed = importer.import_zip(zip_path, target)
