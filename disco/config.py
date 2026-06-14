@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 from pathlib import Path
 
 if os.name == "nt":
@@ -11,10 +10,6 @@ else:
 CONFIG_FILE = CONFIG_DIR / "settings.json"
 
 STEAM_APP_ID = "3404260"
-
-
-def launch_game_url() -> str:
-    return f"steam://rungameid/{STEAM_APP_ID}"
 
 
 def autodetect_imported_songs() -> Path | None:
@@ -38,38 +33,6 @@ def autodetect_imported_songs() -> Path | None:
         if path.exists() or path.parent.exists():
             return path
     return None
-
-
-def find_game_exe() -> Path | None:
-    """Locate Pagoda.exe in common Steam library locations (Windows)."""
-    if os.name != "nt":
-        return None
-    roots = []
-    for drive in "CDEFGH":
-        roots.append(Path(f"{drive}:/SteamLibrary/steamapps/common"))
-        roots.append(Path(f"{drive}:/Program Files (x86)/Steam/steamapps/common"))
-    for root in roots:
-        if not root.exists():
-            continue
-        for name in ("Dead as Disco", "Dead as Disco Demo"):
-            game_dir = root / name
-            if game_dir.exists():
-                for exe in game_dir.rglob("Pagoda.exe"):
-                    return exe
-    return None
-
-
-def is_game_running() -> bool:
-    """True if the Dead as Disco process appears to be running (Windows)."""
-    if os.name != "nt":
-        return False
-    try:
-        out = subprocess.run(
-            ["tasklist", "/FI", "IMAGENAME eq PagodaSteam-Win64-Shipping.exe"],
-            capture_output=True, text=True)
-        return "PagodaSteam-Win64-Shipping.exe" in out.stdout
-    except Exception:
-        return False
 
 
 def load_settings() -> dict:

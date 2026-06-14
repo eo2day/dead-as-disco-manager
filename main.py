@@ -6,10 +6,8 @@ os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--use-gl=angle --use-angle=d3d11"
 
 import re
 import sys
-import time
 import struct
 import shutil
-import subprocess
 from pathlib import Path
 
 from PySide6.QtGui import QIcon
@@ -21,7 +19,7 @@ from PySide6.QtWidgets import (
     QLineEdit, QComboBox, QCheckBox,
 )
 
-from disco import config, importer, playlists, bjpl
+from disco import config, importer, playlists, bjpl, game
 from disco.browser import BrowseTab
 
 SORT_OPTIONS = ["Artist", "Title", "BPM", "Duration"]
@@ -153,7 +151,7 @@ class MainWindow(QMainWindow):
         return None
 
     def _warn_if_running(self) -> bool:
-        if config.is_game_running():
+        if game.is_game_running():
             QMessageBox.warning(
                 self, "Game is running",
                 "Dead as Disco is open. It rewrites playlist files when it saves, "
@@ -485,16 +483,12 @@ class MainWindow(QMainWindow):
         self.refresh_list()
 
     def restart_game(self):
-        exe = config.find_game_exe()
+        exe = game.find_game_exe()
         if not exe:
             QMessageBox.warning(self, "Game not found",
                                 "Couldn't find Pagoda.exe. Launch the game from Steam.")
             return
-        if os.name == "nt":
-            for name in ("PagodaSteam-Win64-Shipping.exe", "Pagoda.exe"):
-                subprocess.run(["taskkill", "/F", "/IM", name], capture_output=True)
-        time.sleep(1.0)
-        subprocess.Popen([str(exe)], cwd=str(exe.parent))
+        game.restart_game(exe)
         QMessageBox.information(self, "Restarting", f"Relaunched {exe.name}.")
 
 
