@@ -5,18 +5,16 @@ import shutil
 from pathlib import Path
 
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget,
-    QLabel, QPushButton, QFileDialog, QListWidget, QListWidgetItem,
+    QLabel, QPushButton, QFileDialog, QListWidget,
     QMessageBox, QTabWidget, QSplitter, QDialog, QDialogButtonBox, QInputDialog,
-    QLineEdit, QComboBox, QCheckBox,
 )
 
 from disco import config, importer, playlists, bjpl, game
 from disco.browser import BrowseTab
-from ui.helpers import SORT_OPTIONS, song_label, filter_sort
 from ui.sidebar import Sidebar
+from ui.song_list import SongListWidget
 
 
 class MainWindow(QMainWindow):
@@ -37,7 +35,6 @@ class MainWindow(QMainWindow):
         self._editing_name = ""
         self._editing_songs: list[tuple[str, str, int]] = []
         self._all_installed: list = []
-        self._checked: set[str] = set()
 
         sidebar = Sidebar()
         self.stack = QStackedWidget()
@@ -85,19 +82,7 @@ class MainWindow(QMainWindow):
         b.addStretch(); b.addWidget(restart); b.addWidget(ch)
         root.addLayout(b)
 
-        fr = QHBoxLayout()
-        self.search = QLineEdit(); self.search.setPlaceholderText("Search title or artist…")
-        self.search.textChanged.connect(self.render_installed)
-        self.sort = QComboBox(); self.sort.addItems(SORT_OPTIONS)
-        self.sort.currentIndexChanged.connect(self.render_installed)
-        self.desc = QCheckBox("Desc"); self.desc.toggled.connect(self.render_installed)
-        fr.addWidget(self.search, 1)
-        fr.addWidget(QLabel("Sort:")); fr.addWidget(self.sort); fr.addWidget(self.desc)
-        root.addLayout(fr)
-
-        root.addWidget(QLabel("Installed songs:"))
-        self.song_list = QListWidget()
-        self.song_list.itemChanged.connect(self._on_song_check)
+        self.song_list = SongListWidget()
         root.addWidget(self.song_list)
         return w
 
@@ -180,51 +165,14 @@ class MainWindow(QMainWindow):
             self.playlist_songs.addItem(disp)
 
     def _pick_songs_dialog(self, title):
-        """Checkbox song picker with search + sort; returns chosen MapFolders."""
+        """Checkbox song picker; returns chosen MapFolders."""
         installed = importer.list_installed(config.get_imported_songs_path())
         dlg = QDialog(self); dlg.setWindowTitle(title); dlg.resize(580, 640)
         lay = QVBoxLayout(dlg)
 
-        fr = QHBoxLayout()
-        search = QLineEdit(); search.setPlaceholderText("Search title or artist…")
-        sort = QComboBox(); sort.addItems(SORT_OPTIONS)
-        desc = QCheckBox("Desc")
-        fr.addWidget(search, 1); fr.addWidget(QLabel("Sort:")); fr.addWidget(sort); fr.addWidget(desc)
-        lay.addLayout(fr)
-
-        lst = QListWidget(); lay.addWidget(lst, 1)
-        checked: set[str] = set()
-
-        def render():
-            lst.blockSignals(True)
-            lst.clear()
-            for m in filter_sort(installed, search.text(), sort.currentText(), desc.isChecked()):
-                it = QListWidgetItem(song_label(m))
-                it.setData(Qt.ItemDataRole.UserRole, m)
-                it.setFlags(it.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                it.setCheckState(Qt.CheckState.Checked if str(m.source) in checked
-                                 else Qt.CheckState.Unchecked)
-                if m.unique_id is None:
-                    it.setText(it.text() + "   (no ID — can't add)")
-                    it.setFlags(it.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                lst.addItem(it)
-            lst.blockSignals(False)
-
-        def on_change(it):
-            m = it.data(Qt.ItemDataRole.UserRole)
-            if not m:
-                return
-            k = str(m.source)
-            if it.checkState() == Qt.CheckState.Checked:
-                checked.add(k)
-            else:
-                checked.discard(k)
-
-        lst.itemChanged.connect(on_change)
-        search.textChanged.connect(render)
-        sort.currentIndexChanged.connect(render)
-        desc.toggled.connect(render)
-        render()
+        song_list = SongListWidget(disable_no_id=True)
+        song_list.set_songs(installed)
+        lay.addWidget(song_list, 1)
 
         bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |
                               QDialogButtonBox.StandardButton.Cancel)
@@ -232,7 +180,7 @@ class MainWindow(QMainWindow):
         lay.addWidget(bb)
         if not dlg.exec():
             return None
-        return [m for m in installed if str(m.source) in checked and m.unique_id is not None]
+        return song_list.checked_maps()
 
     def new_playlist(self):
         tmpl = self._find_template()
@@ -393,47 +341,13 @@ class MainWindow(QMainWindow):
     def refresh_list(self):
         path = self.current_path()
         self._all_installed = importer.list_installed(path) if path else []
-        self._checked.clear()
-        self.render_installed()
-
-    def render_installed(self):
-        self.song_list.blockSignals(True)
-        self.song_list.clear()
-        if not self._all_installed:
-            self.song_list.addItem("(no songs installed yet)")
-            self.song_list.blockSignals(False)
-            return
-        maps = filter_sort(self._all_installed, self.search.text(),
-                           self.sort.currentText(), self.desc.isChecked())
-        for m in maps:
-            it = QListWidgetItem(song_label(m))
-            it.setData(Qt.ItemDataRole.UserRole, m)
-            it.setFlags(it.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            it.setCheckState(Qt.CheckState.Checked if str(m.source) in self._checked
-                             else Qt.CheckState.Unchecked)
-            self.song_list.addItem(it)
-        self.song_list.blockSignals(False)
-
-    def _on_song_check(self, item):
-        m = item.data(Qt.ItemDataRole.UserRole)
-        if not m:
-            return
-        k = str(m.source)
-        if item.checkState() == Qt.CheckState.Checked:
-            self._checked.add(k)
-        else:
-            self._checked.discard(k)
+        self.song_list.set_songs(self._all_installed)
 
     def toggle_all_checks(self):
-        visible = [self.song_list.item(i) for i in range(self.song_list.count())
-                   if self.song_list.item(i).data(Qt.ItemDataRole.UserRole)]
-        any_unchecked = any(it.checkState() != Qt.CheckState.Checked for it in visible)
-        state = Qt.CheckState.Checked if any_unchecked else Qt.CheckState.Unchecked
-        for it in visible:
-            it.setCheckState(state)
+        self.song_list.toggle_all()
 
     def remove_song(self):
-        maps = [m for m in self._all_installed if str(m.source) in self._checked]
+        maps = self.song_list.checked_maps()
         if not maps:
             QMessageBox.warning(self, "Nothing checked", "Tick the songs you want to remove.")
             return
