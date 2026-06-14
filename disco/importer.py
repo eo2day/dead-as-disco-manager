@@ -15,6 +15,7 @@ class MapFolder:
     tempo: int | None = None
     unique_id: int | None = None
     duration: float | None = None   # seconds, read from the .ogg
+    offset: float | None = None     # beatOffset, from Meta.json
 
     @property
     def folder_name(self) -> str:
@@ -75,6 +76,14 @@ def _read_uid(meta_path: Path) -> int | None:
     return int(u) if isinstance(u, (int, float)) else None
 
 
+def _read_offset(meta_path: Path) -> float | None:
+    data = _load_json(meta_path)
+    if data is None:
+        return None
+    o = data.get("beatOffset")
+    return float(o) if isinstance(o, (int, float)) else None
+
+
 def _read_ogg_duration(ogg_path: Path) -> float | None:
     """Estimate an Ogg Vorbis file's duration without external libraries.
 
@@ -122,7 +131,7 @@ def _scan_folder(folder: Path) -> MapFolder | None:
         title, artist = _read_meta(meta)
         return MapFolder(source=folder, title=title, artist=artist,
                          tempo=_read_tempo(meta), unique_id=_read_uid(meta),
-                         duration=_read_ogg_duration(ogg))
+                         duration=_read_ogg_duration(ogg), offset=_read_offset(meta))
     return None
 
 
