@@ -16,9 +16,14 @@ QLineEdit, QComboBox, QListWidget, QTableWidget, QTextBrowser, QTreeWidget {
 }
 QListWidget, QTableWidget, QTextBrowser, QTreeWidget {
     padding: 2px;
+    outline: 0;
 }
 QLineEdit:focus, QComboBox:focus {
     border: 1px solid #7c5cff;
+}
+QTableWidget::item:focus, QListWidget::item:focus {
+    border: none;
+    outline: 0;
 }
 QHeaderView::section {
     background-color: #3a3a3a;
@@ -26,6 +31,20 @@ QHeaderView::section {
     border: 1px solid #444;
     border-radius: 0px;
     padding: 6px;
+}
+QTableWidget::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #888;
+    border-radius: 3px;
+    background-color: #1e1e1e;
+}
+QTableWidget::indicator:hover {
+    border: 1px solid #7c5cff;
+}
+QTableWidget::indicator:checked {
+    background-color: #7c5cff;
+    border: 1px solid #7c5cff;
 }
 QPushButton {
     background-color: #3a3a3a;
@@ -44,6 +63,24 @@ QPushButton:checked {
     background-color: #7c5cff;
     color: #ffffff;
     border: 1px solid #7c5cff;
+}
+#sidebar {
+    background-color: #1c1c1c;
+    border-right: 1px solid #141414;
+}
+#sidebar QPushButton {
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    padding: 6px 12px;
+}
+#sidebar QPushButton:hover {
+    background-color: #3a3a3a;
+}
+#sidebar QPushButton:checked {
+    background-color: #7c5cff;
+    color: #ffffff;
+    border-radius: 6px;
 }
 QGroupBox {
     background-color: #323232;
@@ -125,9 +162,14 @@ QLineEdit, QComboBox, QListWidget, QTableWidget, QTextBrowser, QTreeWidget {
 }
 QListWidget, QTableWidget, QTextBrowser, QTreeWidget {
     padding: 2px;
+    outline: 0;
 }
 QLineEdit:focus, QComboBox:focus {
     border: 1px solid #6d4fe0;
+}
+QTableWidget::item:focus, QListWidget::item:focus {
+    border: none;
+    outline: 0;
 }
 QHeaderView::section {
     background-color: #e6e6e6;
@@ -135,6 +177,20 @@ QHeaderView::section {
     border: 1px solid #bbb;
     border-radius: 0px;
     padding: 6px;
+}
+QTableWidget::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background-color: #ffffff;
+}
+QTableWidget::indicator:hover {
+    border: 1px solid #6d4fe0;
+}
+QTableWidget::indicator:checked {
+    background-color: #6d4fe0;
+    border: 1px solid #6d4fe0;
 }
 QPushButton {
     background-color: #e6e6e6;
@@ -153,6 +209,24 @@ QPushButton:checked {
     background-color: #6d4fe0;
     color: #ffffff;
     border: 1px solid #6d4fe0;
+}
+#sidebar {
+    background-color: #dcdcdc;
+    border-right: 1px solid #c4c4c4;
+}
+#sidebar QPushButton {
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    padding: 6px 12px;
+}
+#sidebar QPushButton:hover {
+    background-color: #d8d8d8;
+}
+#sidebar QPushButton:checked {
+    background-color: #6d4fe0;
+    color: #ffffff;
+    border-radius: 6px;
 }
 QGroupBox {
     background-color: #ffffff;

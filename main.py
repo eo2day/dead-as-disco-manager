@@ -23,6 +23,7 @@ if __name__ == "__main__":
             pass
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
     theme.apply_theme(app, config.get_theme())
     win = MainWindow()
     win.show()

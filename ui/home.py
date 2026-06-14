@@ -20,6 +20,8 @@ class HomePage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(40, 20, 40, 20)
+        layout.addStretch()
 
         paths_box = QGroupBox("File paths")
         form = QFormLayout(paths_box)

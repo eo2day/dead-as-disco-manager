@@ -1,4 +1,4 @@
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QButtonGroup
 
 SECTIONS = ["Home", "Browse", "Library"]
@@ -11,14 +11,17 @@ class Sidebar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedWidth(140)
+        self.setObjectName("sidebar")
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setFixedWidth(150)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setSpacing(4)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
 
+        layout.addStretch()
         for i, label in enumerate(SECTIONS):
             btn = QPushButton(label)
             btn.setCheckable(True)
