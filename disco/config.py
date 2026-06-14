@@ -57,3 +57,40 @@ def set_imported_songs_path(path: Path) -> None:
     settings = load_settings()
     settings["imported_songs_path"] = str(path)
     save_settings(settings)
+
+
+def get_theme() -> str:
+    settings = load_settings()
+    return settings.get("theme", "dark")
+
+
+def set_theme(name: str) -> None:
+    settings = load_settings()
+    settings["theme"] = name
+    save_settings(settings)
+
+
+def get_steam_app_id() -> str:
+    settings = load_settings()
+    return settings.get("steam_app_id", STEAM_APP_ID)
+
+
+def set_steam_app_id(app_id: str) -> None:
+    settings = load_settings()
+    settings["steam_app_id"] = app_id
+    save_settings(settings)
+
+
+def get_game_exe_path() -> Path | None:
+    settings = load_settings()
+    if "game_exe_path" in settings:
+        path = Path(settings["game_exe_path"])
+        if path.exists():
+            return path
+    return None
+
+
+def set_game_exe_path(path: Path) -> None:
+    settings = load_settings()
+    settings["game_exe_path"] = str(path)
+    save_settings(settings)

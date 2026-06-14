@@ -7,7 +7,7 @@ from disco import config
 
 
 def launch_game_url() -> str:
-    return f"steam://rungameid/{config.STEAM_APP_ID}"
+    return f"steam://rungameid/{config.get_steam_app_id()}"
 
 
 def find_game_exe() -> Path | None:
