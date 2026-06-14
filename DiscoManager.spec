@@ -13,7 +13,10 @@ a = Analysis(
     datas=datas + [("icon.png", ".")],
     hiddenimports=hiddenimports + [
         "disco.config", "disco.importer", "disco.playlists",
-        "disco.bjpl", "disco.browser",
+        "disco.bjpl", "disco.game",
+        "ui.theme", "ui.sidebar", "ui.main_window", "ui.home", "ui.guide",
+        "ui.song_list", "ui.browse.browser",
+        "ui.library.library_page", "ui.library.installed_tab", "ui.library.playlists_tab",
     ],
     hookspath=[],
     runtime_hooks=[],
