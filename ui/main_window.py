@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 from disco import config, importer, playlists, bjpl, game
 from disco.browser import BrowseTab
 from ui import theme
+from ui.guide import show_guide_dialog
 from ui.home import HomePage
 from ui.sidebar import Sidebar
 from ui.song_list import SongListWidget
@@ -44,6 +45,7 @@ class MainWindow(QMainWindow):
         self.home_page = HomePage()
         self.home_page.pathsChanged.connect(self._on_paths_changed)
         self.home_page.themeChanged.connect(self._on_theme_changed)
+        self.home_page.guideRequested.connect(lambda: show_guide_dialog(self))
 
         self.browse = BrowseTab(config.CONFIG_DIR, self)
         self.browse.imported.connect(lambda _m: self.refresh_list())
