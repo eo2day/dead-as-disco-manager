@@ -21,6 +21,7 @@ all from one app.
 - **Playlists**: create, edit, reorder, rename, and delete playlists of your
   imported songs
 - **Restart the game** from the app to apply changes
+- Simple sidebar navigation between **Home**, **Browse**, and **Library**
 
 ---
 
@@ -57,28 +58,35 @@ If PowerShell blocks venv activation, run once:
 
 ## Getting started
 
-On launch, the app opens on the **Browse DiscoMaps** tab and automatically
-finds your game's song folder. You can confirm the detected folder on the
-**Installed** tab — it's shown at the top.
+The left sidebar switches between three sections: **Home**, **Browse**, and
+**Library**.
 
-If the folder wasn't detected, go to the **Installed** tab, click
-**Change folder…**, and browse to:
+On launch, the app opens on the **Home** page and automatically finds your
+game's song folder, shown under **Imported songs folder**.
+
+![Home page](docs/screenshots/01-home-tab.png)
+
+If the folder wasn't detected, click **Browse…** or **Auto-detect** next to
+**Imported songs folder** and point it at:
 `%LOCALAPPDATA%\Pagoda\Saved\ImportedSongs`
+
+The Home page is also where you set the **game executable** (for restarting
+the game), your **Steam App ID**, and the app **theme** (Dark/Light).
 
 ## Browsing and downloading songs
 
-1. Open the **Browse DiscoMaps** tab.
+1. Open the **Browse** section in the sidebar.
 2. Log in to your DiscoMaps account (only needed once — the app remembers you).
 3. Find a map and download it as normal.
 4. The app detects the download, extracts it, and installs it automatically.
 
-![Browse DiscoMaps tab](docs/screenshots/02-browse-tab.png)
+![Browse tab](docs/screenshots/02-browse-tab.png)
 
 Restart the game to see newly installed songs.
 
 ## Managing your installed songs
 
-The **Installed** tab lists every song with its **BPM** and **length**.
+The **Library → Installed** tab lists every song with its **BPM** and **length**.
 
 ![Installed songs tab](docs/screenshots/03-installed-tab.png)
 
@@ -92,8 +100,8 @@ The **Installed** tab lists every song with its **BPM** and **length**.
 
 ## Restarting the game
 
-Click **Restart game** (Installed tab) to close Dead as Disco and relaunch it.
-Use this after making changes so they take effect.
+Click **Restart game** (Library → Installed tab) to close Dead as Disco and
+relaunch it. Use this after making changes so they take effect.
 
 ## Playlists
 
@@ -103,7 +111,7 @@ The manager builds new playlists from a blueprint:
 
 1. In the **game**, create a new playlist named exactly **`Template`** and add one song
 2. Fully exit the game.
-3. In the manager, open the **Playlists** tab and click **Rescan**.
+3. In the manager, open **Library → Playlists** and click **Rescan**.
 
 The Template is protected — it can't be edited or deleted from the app.
 
@@ -112,7 +120,7 @@ The Template is protected — it can't be edited or deleted from the app.
 ### Creating a playlist
 
 1. Make sure the game is **closed**.
-2. On the **Playlists** tab, click **New playlist…**
+2. On the **Library → Playlists** tab, click **New playlist…**
 3. Enter a name.
 4. In the song picker, **tick the songs** you want (search and sort work
    here too), then click **OK**.
