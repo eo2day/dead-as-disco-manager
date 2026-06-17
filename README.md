@@ -76,7 +76,10 @@ the game), your **Steam App ID**, and the app **theme** (Dark/Light).
 ## Browsing and downloading songs
 
 1. Open the **Browse** section in the sidebar.
-2. Log in to your DiscoMaps account (only needed once — the app remembers you).
+2. Log in to your DiscoMaps account (only needed once — the app remembers your
+   session). On your first download, the site will ask you to set the location
+   of your ImportedSongs folder — once saved, it patches songs automatically
+   on download.
 3. Find a map and download it as normal.
 4. The app detects the download, extracts it, and installs it automatically.
 
@@ -145,6 +148,17 @@ Select a playlist, then use the buttons under the song list:
 ### Deleting a playlist
 
 Select it and click **Delete playlist**. (The Template can't be deleted here.)
+
+## Game 0.1.1 — custom song fix
+
+Game update 0.1.1 changed how custom songs load. Songs imported before the
+update may show a "source file no longer exists" error in-game. The manager
+handles this automatically:
+
+- **New downloads** are patched on import (no action needed).
+- **Existing library:** click **Fix songs for 0.1.1** on the Library → Installed
+  tab (close the game first). This writes the required metadata fields into
+  each song's `Meta.json` so the game can find the audio file again.
 
 ## Tips & troubleshooting
 

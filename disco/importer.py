@@ -1,10 +1,17 @@
+import hashlib
 import json
+import os
+import re
 import struct
 import shutil
 import tempfile
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
+
+_SRC_FIELDS_RE = re.compile(
+    r',?\s*"originalAudioFile(?:Hash|Path)"\s*:\s*"(?:[^"\\]|\\.)*"'
+)
 
 
 @dataclass
@@ -168,6 +175,7 @@ def import_zip(zip_path: Path, imported_songs: Path) -> list[str]:
             if dest.exists():
                 shutil.rmtree(dest)
             shutil.copytree(m.source, dest)
+            patch_meta_source(str(dest))  # game 0.1.1 meta-fix
             installed.append(name)
     return installed
 
@@ -182,3 +190,67 @@ def list_installed(imported_songs: Path) -> list[MapFolder]:
         if m:
             result.append(m)
     return result
+
+
+def _md5_of_file(path: str) -> str:
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest().lower()
+
+
+def patch_meta_source(song_dir: str) -> bool:
+    """Write originalAudioFileHash + originalAudioFilePath into a song's
+    Meta.json so it plays under game 0.1.1.  Idempotent.
+
+    Returns True if patched, False if skipped (missing Meta.json/Audio.ogg).
+    """
+    meta = os.path.join(song_dir, "Meta.json")
+    ogg = os.path.join(song_dir, "Audio.ogg")
+    if not (os.path.isfile(meta) and os.path.isfile(ogg)):
+        return False
+
+    md5 = _md5_of_file(ogg)
+    abs_ogg = os.path.abspath(ogg).replace("\\", "/")
+
+    with open(meta, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    text = _SRC_FIELDS_RE.sub("", text)
+    trimmed = text.rstrip()
+    idx = trimmed.rfind("}")
+    if idx < 0:
+        raise ValueError("Meta.json has no closing brace")
+
+    body = trimmed[:idx].rstrip()
+    inject = (
+        ',"originalAudioFileHash":"' + md5 + '"'
+        ',"originalAudioFilePath":"' + abs_ogg + '"}'
+    )
+    with open(meta, "w", encoding="utf-8", newline="") as f:
+        f.write(body + inject)
+    return True
+
+
+def repair_installed(imported_songs_root: str):
+    """Patch every song folder under ImportedSongs.
+
+    Returns (fixed, skipped, errors) where errors is a list of
+    (folder_name, message).
+    """
+    fixed = 0
+    skipped = 0
+    errors: list[tuple[str, str]] = []
+    for entry in sorted(os.scandir(imported_songs_root), key=lambda e: e.name):
+        if not entry.is_dir():
+            continue
+        try:
+            if patch_meta_source(entry.path):
+                fixed += 1
+            else:
+                skipped += 1
+        except Exception as exc:
+            errors.append((entry.name, str(exc)))
+            skipped += 1
+    return fixed, skipped, errors

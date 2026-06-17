@@ -24,7 +24,9 @@ class InstalledTab(QWidget):
         chk = QPushButton("Check all / none"); chk.clicked.connect(self.toggle_all_checks)
         rm = QPushButton("Remove checked"); rm.clicked.connect(self.remove_song)
         restart = QPushButton("Restart game"); restart.clicked.connect(self.restart_game)
+        fix = QPushButton("Fix songs for 0.1.1"); fix.clicked.connect(self.repair_meta)
         b.addWidget(imp); b.addWidget(ref); b.addWidget(chk); b.addWidget(rm)
+        b.addWidget(fix)
         b.addStretch(); b.addWidget(restart)
         root.addLayout(b)
 
@@ -81,6 +83,22 @@ class InstalledTab(QWidget):
         QMessageBox.information(self, "Imported", "Installed:\n" + "\n".join(installed) +
                                "\n\nRestart the game to see them.")
         self.refresh()
+
+    def repair_meta(self):
+        path = self.current_path()
+        if not path:
+            QMessageBox.warning(self, "No folder", "Set your ImportedSongs folder on the Home page first.")
+            return
+        if game.is_game_running():
+            QMessageBox.warning(
+                self, "Game is running",
+                "Dead as Disco is open. Close the game first, then try again.")
+            return
+        fixed, skipped, errors = importer.repair_installed(str(path))
+        msg = f"Fixed {fixed} song(s), skipped {skipped}."
+        if errors:
+            msg += "\n\nErrors:\n" + "\n".join(f"  {name}: {err}" for name, err in errors)
+        QMessageBox.information(self, "Repair complete", msg)
 
     def restart_game(self):
         exe = config.get_game_exe_path() or game.find_game_exe()
