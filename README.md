@@ -247,6 +247,17 @@ pip install pyinstaller
 pyinstaller DiscoManager.spec
 ```
 
+On Linux, the equivalent build flow is:
+
+```bash
+sudo pacman -S --needed python python-pip python-virtualenv
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install pyinstaller
+pyinstaller DiscoManager.spec
+```
+
 The runnable app is the **`dist/DiscoManager/`** folder (use the folder build,
 not one-file — the embedded browser needs it). Zip and share that folder.
 
