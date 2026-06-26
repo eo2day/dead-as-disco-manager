@@ -51,6 +51,62 @@ On Linux/macOS, activate the venv with:
 . .venv/bin/activate
 ```
 
+### Run on Linux / Proton
+
+On Arch-based systems like CachyOS, install the required system packages first:
+
+```bash
+sudo pacman -S --needed git python python-pip python-virtualenv
+```
+
+Then clone and run the app:
+
+```bash
+git clone https://github.com/eo2day/dead-as-disco-manager.git
+cd dead-as-disco-manager
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+If your system exposes `python3` instead of `python`, use:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python3 main.py
+```
+
+If the game is running through Proton, the manager should auto-detect the song
+folder. If it doesn't, set **Imported songs folder** manually to:
+
+`~/.local/share/Steam/steamapps/compatdata/<appid>/pfx/drive_c/users/<user>/AppData/Local/Pagoda/Saved/ImportedSongs`
+
+### Qt WebEngine / PySide6 troubleshooting
+
+The embedded browser depends on Qt WebEngine through `PySide6`. If the app
+starts but the browser tab is blank or the app fails during startup:
+
+1. Make sure you're running the app from the project virtualenv.
+2. Reinstall the Python dependencies inside that venv:
+
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+3. If startup still fails, run the app from a terminal and read the exact Qt /
+   WebEngine error before changing anything:
+
+   ```bash
+   python main.py
+   ```
+
+On Linux, the app does **not** force the Windows ANGLE / D3D11 WebEngine flag,
+so Qt uses the platform's normal graphics stack.
+
 If PowerShell blocks venv activation, run once:
 `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
