@@ -69,7 +69,7 @@ sudo dnf install git python3 python3-pip
 Then clone and run the app:
 
 ```bash
-git clone https://github.com/eo2day/dead-as-disco-manager.git
+git clone https://github.com/kirhaaaaa/dead-as-disco-manager.git
 cd dead-as-disco-manager
 python -m venv .venv
 source .venv/bin/activate
