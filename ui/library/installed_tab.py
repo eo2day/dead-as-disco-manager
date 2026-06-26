@@ -102,9 +102,14 @@ class InstalledTab(QWidget):
 
     def restart_game(self):
         exe = config.get_game_exe_path() or game.find_game_exe()
-        if not exe:
+        if game.supports_direct_game_exe() and not exe:
             QMessageBox.warning(self, "Game not found",
                                 "Couldn't find Pagoda.exe. Set it on the Home page or launch the game from Steam.")
             return
-        game.restart_game(exe)
-        QMessageBox.information(self, "Restarting", f"Relaunched {exe.name}.")
+        try:
+            game.restart_game(exe)
+        except RuntimeError as e:
+            QMessageBox.critical(self, "Restart failed", str(e))
+            return
+        detail = exe.name if exe else "the Steam game entry"
+        QMessageBox.information(self, "Restarting", f"Relaunched {detail}.")

@@ -27,8 +27,9 @@ all from one app.
 
 ## Requirements
 
-- Windows (the game and its file paths are Windows-based)
-- Python 3.10+ (only needed to run from source — not for the packaged app)
+- Windows for the packaged `.exe` release
+- Python 3.10+ to run from source
+- Linux/Proton is supported from source for library, import, and playlist workflows
 
 ## Install & run
 
@@ -42,6 +43,12 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
+```
+
+On Linux/macOS, activate the venv with:
+
+```bash
+. .venv/bin/activate
 ```
 
 If PowerShell blocks venv activation, run once:
@@ -68,10 +75,12 @@ game's song folder, shown under **Imported songs folder**.
 
 If the folder wasn't detected, click **Browse…** or **Auto-detect** next to
 **Imported songs folder** and point it at:
-`%LOCALAPPDATA%\Pagoda\Saved\ImportedSongs`
 
-The Home page is also where you set the **game executable** (for restarting
-the game), your **Steam App ID**, and the app **theme** (Dark/Light).
+- Windows: `%LOCALAPPDATA%\Pagoda\Saved\ImportedSongs`
+- Linux/Proton: `~/.local/share/Steam/steamapps/compatdata/<appid>/pfx/drive_c/users/<user>/AppData/Local/Pagoda/Saved/ImportedSongs`
+
+The Home page is also where you set the **game launch target** (Windows only),
+your **Steam App ID**, and the app **theme** (Dark/Light).
 
 ## Browsing and downloading songs
 
@@ -104,7 +113,9 @@ The **Library → Installed** tab lists every song with its **BPM** and **length
 ## Restarting the game
 
 Click **Restart game** (Library → Installed tab) to close Dead as Disco and
-relaunch it. Use this after making changes so they take effect.
+relaunch it. On Linux/Proton the manager restarts through the configured Steam
+App ID rather than launching `Pagoda.exe` directly. Use this after making
+changes so they take effect.
 
 ## Playlists
 
@@ -186,7 +197,7 @@ not one-file — the embedded browser needs it). Zip and share that folder.
 ## Notes
 
 - Settings and the embedded browser's login/cache are stored in
-  `%APPDATA%\DiscoManager`.
+  `%APPDATA%\DiscoManager` on Windows or `~/.config/disco-manager` on Linux.
 
 ---
 

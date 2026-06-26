@@ -2,7 +2,8 @@
 # Dead as Disco Music Manager — developed with AI assistance (Anthropic Claude).
 
 import os
-os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--use-gl=angle --use-angle=d3d11"
+if os.name == "nt":
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--use-gl=angle --use-angle=d3d11"
 
 import sys
 

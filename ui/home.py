@@ -3,7 +3,7 @@ from pathlib import Path
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QLineEdit,
-    QPushButton, QFileDialog, QComboBox, QGroupBox, QMessageBox,
+    QPushButton, QFileDialog, QComboBox, QGroupBox, QMessageBox, QLabel,
 )
 
 from disco import config, game
@@ -51,7 +51,15 @@ class HomePage(QWidget):
         exe_row.addWidget(self.exe_edit, 1)
         exe_row.addWidget(exe_browse)
         exe_row.addWidget(exe_auto)
-        form.addRow("Game executable (Pagoda.exe):", exe_row)
+        form.addRow(game.game_exe_label(), exe_row)
+
+        self.exe_help = QLabel(game.game_exe_help_text())
+        self.exe_help.setWordWrap(True)
+        form.addRow("", self.exe_help)
+
+        if not game.supports_direct_game_exe():
+            self.exe_edit.setPlaceholderText("Uses Steam App ID restart on this platform")
+            exe_auto.setEnabled(False)
 
         layout.addWidget(paths_box)
 
@@ -122,7 +130,7 @@ class HomePage(QWidget):
     def _browse_exe(self) -> None:
         start = self.exe_edit.text() or str(Path.home())
         chosen, _ = QFileDialog.getOpenFileName(
-            self, "Select Pagoda.exe", start, "Executable (*.exe)")
+            self, game.game_exe_dialog_title(), start, game.game_exe_filter())
         if chosen:
             self.exe_edit.setText(chosen)
 
@@ -131,7 +139,7 @@ class HomePage(QWidget):
         if detected:
             self.exe_edit.setText(str(detected))
         else:
-            QMessageBox.warning(self, "Not found", "Couldn't auto-detect Pagoda.exe.")
+            QMessageBox.warning(self, "Not found", f"Couldn't auto-detect {game.game_exe_label().rstrip(':')}.")
 
     def _on_theme_changed(self, text: str) -> None:
         name = "light" if text == "Light" else "dark"

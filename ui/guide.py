@@ -1,6 +1,9 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
 
-GUIDE_MARKDOWN = """
+from disco import game, platform
+
+
+GUIDE_MARKDOWN = f"""
 # User Guide
 
 > **Always do playlist work with the game closed.** Dead as Disco rewrites its
@@ -13,7 +16,7 @@ change it on the **Home** page, which also shows where your playlists live.
 
 If the folder wasn't detected, go to **Home**, click **Browse…** next to
 "Imported songs folder", and select:
-`%LOCALAPPDATA%\\Pagoda\\Saved\\ImportedSongs`
+`{"%LOCALAPPDATA%\\\\Pagoda\\\\Saved\\\\ImportedSongs" if platform.WINDOWS else "~/.local/share/Steam/steamapps/compatdata/<appid>/pfx/drive_c/users/<user>/AppData/Local/Pagoda/Saved/ImportedSongs"}`
 
 ## Browsing and downloading songs
 
@@ -37,7 +40,7 @@ and **Offset**.
 
 ## Restarting the game
 
-Click **Restart game** (Library → Installed) to close Dead as Disco and relaunch it.
+Click **Restart game** (Library → Installed) to close Dead as Disco and relaunch it. {"On Linux/Proton this uses your Steam App ID rather than launching Pagoda.exe directly." if not game.supports_direct_game_exe() else ""}
 Use this after making changes so they take effect.
 
 ## Playlists
