@@ -53,10 +53,17 @@ On Linux/macOS, activate the venv with:
 
 ### Run on Linux / Proton
 
-On Arch-based systems like CachyOS, install the required system packages first:
+Install the required system packages first:
 
 ```bash
+# Arch / CachyOS
 sudo pacman -S --needed git python python-pip python-virtualenv
+
+# Debian / Ubuntu
+sudo apt install git python3 python3-pip python3-venv
+
+# Fedora
+sudo dnf install git python3 python3-pip
 ```
 
 Then clone and run the app:
@@ -250,7 +257,15 @@ pyinstaller DiscoManager.spec
 On Linux, the equivalent build flow is:
 
 ```bash
+# Arch / CachyOS
 sudo pacman -S --needed python python-pip python-virtualenv
+
+# Debian / Ubuntu
+sudo apt install python3 python3-pip python3-venv
+
+# Fedora
+sudo dnf install python3 python3-pip
+
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
