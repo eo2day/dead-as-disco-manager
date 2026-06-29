@@ -96,3 +96,18 @@ def restart_game(exe: Path | None = None) -> None:
         subprocess.Popen([str(exe)], cwd=str(exe.parent))
         return
     _launch_via_steam()
+
+
+def open_in_file_manager(path: Path) -> None:
+    path = Path(path)
+    target = path if path.is_dir() else path.parent
+    if platform.WINDOWS:
+        os.startfile(str(target))
+        return
+
+    for opener in ("xdg-open", "open"):
+        binary = shutil.which(opener)
+        if binary:
+            subprocess.Popen([binary, str(target)])
+            return
+    raise RuntimeError("Couldn't find a file manager opener for this platform.")

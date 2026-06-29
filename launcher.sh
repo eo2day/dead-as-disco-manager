@@ -17,8 +17,27 @@ if [[ ! -x .venv/bin/python ]]; then
   "$PYTHON" -m venv .venv
 fi
 
-echo "Installing/updating dependencies..."
-.venv/bin/python -m pip install -r requirements.txt
+REQ_HASH="$(
+  .venv/bin/python - <<'PY'
+import hashlib
+from pathlib import Path
+print(hashlib.sha256(Path("requirements.txt").read_bytes()).hexdigest())
+PY
+)"
+
+STAMP_FILE=".venv/requirements.sha256"
+STAMP_VALUE=""
+if [[ -f "$STAMP_FILE" ]]; then
+  STAMP_VALUE="$(<"$STAMP_FILE")"
+fi
+
+if [[ "$REQ_HASH" != "$STAMP_VALUE" ]]; then
+  echo "Installing/updating dependencies..."
+  .venv/bin/python -m pip install -r requirements.txt
+  printf '%s\n' "$REQ_HASH" > "$STAMP_FILE"
+else
+  echo "Dependencies unchanged; skipping pip install."
+fi
 
 echo "Launching Dead as Disco Music Manager..."
 exec .venv/bin/python main.py

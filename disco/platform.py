@@ -71,3 +71,18 @@ def find_game_install_dir() -> Path | None:
                 return game_dir
     return None
 
+
+def imported_songs_site_path(path: Path) -> str:
+    """Convert a host ImportedSongs path into the format DiscoMaps expects."""
+    path = Path(path).expanduser().resolve()
+    raw = path.as_posix()
+
+    marker = "/drive_c/"
+    if marker in raw:
+        suffix = raw.split(marker, 1)[1]
+        return f"C:/{suffix}"
+
+    if WINDOWS:
+        return str(path).replace("\\", "/")
+
+    return raw

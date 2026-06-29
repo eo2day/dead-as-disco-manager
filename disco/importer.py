@@ -12,6 +12,7 @@ from pathlib import Path
 _SRC_FIELDS_RE = re.compile(
     r',?\s*"originalAudioFile(?:Hash|Path)"\s*:\s*"(?:[^"\\]|\\.)*"'
 )
+DISCOMAPS_SITE_ID_KEY = "discoMapsBeatmapId"
 
 
 @dataclass
@@ -23,6 +24,7 @@ class MapFolder:
     unique_id: int | None = None
     duration: float | None = None   # seconds, read from the .ogg
     offset: float | None = None     # beatOffset, from Meta.json
+    site_map_id: str | None = None
 
     @property
     def folder_name(self) -> str:
@@ -91,6 +93,14 @@ def _read_offset(meta_path: Path) -> float | None:
     return float(o) if isinstance(o, (int, float)) else None
 
 
+def _read_site_map_id(meta_path: Path) -> str | None:
+    data = _load_json(meta_path)
+    if data is None:
+        return None
+    value = data.get(DISCOMAPS_SITE_ID_KEY)
+    return value if isinstance(value, str) and value.strip() else None
+
+
 def _read_ogg_duration(ogg_path: Path) -> float | None:
     """Estimate an Ogg Vorbis file's duration without external libraries.
 
@@ -138,7 +148,8 @@ def _scan_folder(folder: Path) -> MapFolder | None:
         title, artist = _read_meta(meta)
         return MapFolder(source=folder, title=title, artist=artist,
                          tempo=_read_tempo(meta), unique_id=_read_uid(meta),
-                         duration=_read_ogg_duration(ogg), offset=_read_offset(meta))
+                         duration=_read_ogg_duration(ogg), offset=_read_offset(meta),
+                         site_map_id=_read_site_map_id(meta))
     return None
 
 
@@ -151,7 +162,58 @@ def _find_map_folders(root: Path) -> list[MapFolder]:
     return found
 
 
-def import_zip(zip_path: Path, imported_songs: Path) -> list[str]:
+def _save_json(meta_path: Path, data: dict) -> None:
+    meta_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _normalize_song_text(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def _patch_meta_site_map_id(song_dir: str, site_map_id: str) -> bool:
+    meta = Path(song_dir) / "Meta.json"
+    if not meta.is_file():
+        return False
+    data = _load_json(meta)
+    if data is None:
+        return False
+    data[DISCOMAPS_SITE_ID_KEY] = site_map_id
+    _save_json(meta, data)
+    return True
+
+
+def _apply_download_metadata(installed_dirs: list[Path], download_meta: dict | None) -> None:
+    if not download_meta:
+        return
+    site_map_id = download_meta.get("site_id")
+    if not isinstance(site_map_id, str) or not site_map_id.strip():
+        return
+
+    wanted_title = _normalize_song_text(str(download_meta.get("title", "")))
+    wanted_artist = _normalize_song_text(str(download_meta.get("artist", "")))
+
+    chosen: Path | None = None
+    for dest in installed_dirs:
+        folder = _scan_folder(dest)
+        if not folder:
+            continue
+        if (
+            wanted_title
+            and wanted_artist
+            and _normalize_song_text(folder.title) == wanted_title
+            and _normalize_song_text(folder.artist) == wanted_artist
+        ):
+            chosen = dest
+            break
+
+    if chosen is None and len(installed_dirs) == 1:
+        chosen = installed_dirs[0]
+
+    if chosen is not None:
+        _patch_meta_site_map_id(str(chosen), site_map_id)
+
+
+def import_zip(zip_path: Path, imported_songs: Path, download_meta: dict | None = None) -> list[str]:
     zip_path = Path(zip_path); imported_songs = Path(imported_songs)
     if not zipfile.is_zipfile(zip_path):
         raise ImportError_(f"Not a valid zip file: {zip_path.name}")
@@ -168,6 +230,7 @@ def import_zip(zip_path: Path, imported_songs: Path) -> list[str]:
         if not maps:
             raise ImportError_("No maps found in this zip (expected an .ogg + .json pair).")
         installed = []
+        installed_dirs: list[Path] = []
         for m in maps:
             name = _safe_name(f"{m.artist} - {m.title}") if m.source == tmp_path \
                 else _safe_name(m.folder_name)
@@ -176,7 +239,9 @@ def import_zip(zip_path: Path, imported_songs: Path) -> list[str]:
                 shutil.rmtree(dest)
             shutil.copytree(m.source, dest)
             patch_meta_source(str(dest))  # game 0.1.1 meta-fix
+            installed_dirs.append(dest)
             installed.append(name)
+        _apply_download_metadata(installed_dirs, download_meta)
     return installed
 
 
@@ -213,6 +278,13 @@ def patch_meta_source(song_dir: str) -> bool:
 
     md5 = _md5_of_file(ogg)
     abs_ogg = os.path.abspath(ogg).replace("\\", "/")
+
+    data = _load_json(Path(meta))
+    if data is not None:
+        data["originalAudioFileHash"] = md5
+        data["originalAudioFilePath"] = abs_ogg
+        _save_json(Path(meta), data)
+        return True
 
     with open(meta, "r", encoding="utf-8") as f:
         text = f.read()

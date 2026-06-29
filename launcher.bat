@@ -27,12 +27,25 @@ if not exist ".venv\Scripts\python.exe" (
   )
 )
 
-echo Installing/updating dependencies...
-call ".venv\Scripts\python.exe" -m pip install -r requirements.txt
-if errorlevel 1 (
-  echo Dependency install failed.
-  pause
-  exit /b 1
+for /f %%i in ('".venv\Scripts\python.exe" -c "import hashlib, pathlib; print(hashlib.sha256(pathlib.Path('requirements.txt').read_bytes()).hexdigest())"') do set "REQ_HASH=%%i"
+
+set "STAMP_FILE=.venv\requirements.sha256"
+set "STAMP_HASH="
+if exist "%STAMP_FILE%" (
+  set /p STAMP_HASH=<"%STAMP_FILE%"
+)
+
+if /i not "%REQ_HASH%"=="%STAMP_HASH%" (
+  echo Installing/updating dependencies...
+  call ".venv\Scripts\python.exe" -m pip install -r requirements.txt
+  if errorlevel 1 (
+    echo Dependency install failed.
+    pause
+    exit /b 1
+  )
+  >"%STAMP_FILE%" echo %REQ_HASH%
+) else (
+  echo Dependencies unchanged; skipping pip install.
 )
 
 echo Launching Dead as Disco Music Manager...

@@ -39,6 +39,13 @@ def set_imported_songs_path(path: Path) -> None:
     save_settings(settings)
 
 
+def get_discomaps_imported_songs_path() -> str | None:
+    path = get_imported_songs_path()
+    if not path:
+        return None
+    return platform.imported_songs_site_path(path)
+
+
 def get_theme() -> str:
     settings = load_settings()
     return settings.get("theme", "dark")
