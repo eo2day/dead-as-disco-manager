@@ -64,6 +64,7 @@ class BrowseTab(QWidget):
         self.hide_installed_btn.setCheckable(True)
         self.hide_installed_btn.toggled.connect(self._hide_installed_toggled)
         self.low_motion_checkbox = QCheckBox("Low-Motion mode")
+        self.low_motion_checkbox.setChecked(config.get_low_motion_mode())
         self.low_motion_checkbox.toggled.connect(self._low_motion_toggled)
         self.legend = QLabel(
             'Legend: '
@@ -141,6 +142,7 @@ class BrowseTab(QWidget):
         self._sync_installed_markers()
 
     def _low_motion_toggled(self, _checked: bool):
+        config.set_low_motion_mode(self.low_motion_checkbox.isChecked())
         self._sync_installed_markers()
 
     def _on_page_action(self, action: str, payload: str):
@@ -297,7 +299,10 @@ class BrowseTab(QWidget):
     const card = button.closest(".p-6.relative")
       || button.closest("div[class*='p-6']")
       || button.parentElement;
-    if (!card) return null;
+    const tile = button.closest(".library-card-container")
+      || button.closest(".glass-panel")
+      || card;
+    if (!card || !tile) return null;
 
     const rawTitle = (card.querySelector("h3")?.textContent || "").trim();
     const rawArtist = (card.querySelector("p")?.textContent || "").trim();
@@ -311,7 +316,7 @@ class BrowseTab(QWidget):
     const siteId = button.dataset.id || card.querySelector("[data-id]")?.dataset.id || null;
 
     if (!title || !artist) return null;
-    return { card, button, rawTitle, rawArtist, title, artist, tempo, duration, siteId };
+    return { card, tile, button, rawTitle, rawArtist, title, artist, tempo, duration, siteId };
   };
 
   const classifySong = (entry) => {
@@ -486,7 +491,7 @@ class BrowseTab(QWidget):
         resetButton(button);
       }
       const shouldHide = hideInstalled && (state.state === "installed" || state.state === "update");
-      entry.card.style.display = shouldHide ? "none" : "";
+      entry.tile.style.display = shouldHide ? "none" : "";
     }
   };
 

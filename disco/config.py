@@ -81,3 +81,14 @@ def set_game_exe_path(path: Path) -> None:
     settings = load_settings()
     settings["game_exe_path"] = str(path)
     save_settings(settings)
+
+
+def get_low_motion_mode() -> bool:
+    settings = load_settings()
+    return bool(settings.get("low_motion_mode", False))
+
+
+def set_low_motion_mode(enabled: bool) -> None:
+    settings = load_settings()
+    settings["low_motion_mode"] = bool(enabled)
+    save_settings(settings)
