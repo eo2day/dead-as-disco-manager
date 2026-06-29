@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         self.browse = BrowseTab(config.CONFIG_DIR, self)
         self.library = LibraryPage()
         self.browse.imported.connect(lambda _m: self.library.installed_tab.refresh())
+        self.browse.imported.connect(lambda _m: self.browse.refresh_installed_markers())
 
         self.stack.addWidget(self.home_page)  # index 0 — Home
         self.stack.addWidget(self.browse)     # index 1 — Browse
@@ -62,6 +63,7 @@ class MainWindow(QMainWindow):
     def _on_paths_changed(self):
         self.library.installed_tab.refresh()
         self.library.playlists_tab.refresh_playlists()
+        self.browse.refresh_installed_markers()
 
     def _on_theme_changed(self, name):
         app = QApplication.instance()

@@ -1,3 +1,4 @@
+import json
 import tempfile
 from pathlib import Path
 
@@ -49,6 +50,7 @@ class BrowseTab(QWidget):
         self.page = QWebEnginePage(self.profile, self)
         self.view.setPage(self.page)
         self.view.setMinimumSize(800, 500)
+        self.view.loadFinished.connect(self._sync_installed_markers)
         layout.addWidget(self.view, 1)
 
         back.clicked.connect(self.view.back)
@@ -110,4 +112,135 @@ class BrowseTab(QWidget):
             self.status.setText(msg); self.imported.emit(msg); return
         msg = "Installed " + ", ".join(installed) + " — restart the game to see them."
         self.status.setText(msg)
+        self._sync_installed_markers()
         self.imported.emit(msg)
+
+    def refresh_installed_markers(self):
+        self._sync_installed_markers()
+
+    def _installed_song_payload(self) -> list[dict]:
+        path = config.get_imported_songs_path()
+        if not path:
+            return []
+        payload = []
+        for song in importer.list_installed(path):
+            payload.append({
+                "title": song.title,
+                "artist": song.artist,
+                "tempo": song.tempo,
+            })
+        return payload
+
+    def _sync_installed_markers(self, *_args):
+        payload = json.dumps(self._installed_song_payload())
+        script = f"""
+(() => {{
+  const installedSongs = {payload};
+
+  const normalize = (value) => (value || "")
+    .toString()
+    .normalize("NFKD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .trim()
+    .toLowerCase();
+
+  const titleArtistKeys = new Set();
+  const titleArtistTempoKeys = new Set();
+
+  for (const song of installedSongs) {{
+    const title = normalize(song.title);
+    const artist = normalize(song.artist);
+    if (!title || !artist) continue;
+    titleArtistKeys.add(`${{title}}|${{artist}}`);
+    if (Number.isFinite(song.tempo)) {{
+      titleArtistTempoKeys.add(`${{title}}|${{artist}}|${{Math.round(song.tempo)}}`);
+    }}
+  }}
+
+  const extractSongMeta = (button) => {{
+    const card = button.closest(".p-6.relative")
+      || button.closest("div[class*='p-6']")
+      || button.parentElement;
+    if (!card) return null;
+
+    const title = normalize(card.querySelector("h3")?.textContent);
+    const artist = normalize(card.querySelector("p")?.textContent);
+    const bpmText = card.querySelector(".bpm-text")?.textContent || "";
+    const bpmMatch = bpmText.match(/(\\d+)/);
+    const tempo = bpmMatch ? Number.parseInt(bpmMatch[1], 10) : null;
+
+    if (!title || !artist) return null;
+    return {{ title, artist, tempo }};
+  }};
+
+  const isInstalled = (meta) => {{
+    if (!meta) return false;
+    const baseKey = `${{meta.title}}|${{meta.artist}}`;
+    if (meta.tempo !== null && titleArtistTempoKeys.has(`${{baseKey}}|${{meta.tempo}}`)) {{
+      return true;
+    }}
+    return titleArtistKeys.has(baseKey);
+  }};
+
+  const markInstalled = (button) => {{
+    if (button.dataset.dadInstalled === "1") return;
+    button.dataset.dadInstalled = "1";
+    button.dataset.dadOriginalHtml = button.innerHTML;
+    button.dataset.dadOriginalTitle = button.getAttribute("title") || "";
+    button.style.setProperty("background", "#16a34a", "important");
+    button.style.setProperty("border", "1px solid #15803d", "important");
+    button.style.setProperty("box-shadow", "0 0 0 1px rgba(255,255,255,0.08) inset", "important");
+    button.style.setProperty("color", "#ffffff", "important");
+    button.style.setProperty("pointer-events", "none", "important");
+    button.style.setProperty("opacity", "1", "important");
+    button.innerHTML = '<span class="whitespace-nowrap">Installed</span>';
+    button.setAttribute("title", "Already installed");
+    button.setAttribute("aria-label", "Installed");
+    const tooltip = button.querySelector(".download-tooltip");
+    if (tooltip) tooltip.remove();
+  }};
+
+  const unmarkInstalled = (button) => {{
+    if (button.dataset.dadInstalled !== "1") return;
+    button.dataset.dadInstalled = "0";
+    if (button.dataset.dadOriginalHtml) {{
+      button.innerHTML = button.dataset.dadOriginalHtml;
+    }}
+    if (button.dataset.dadOriginalTitle) {{
+      button.setAttribute("title", button.dataset.dadOriginalTitle);
+    }} else {{
+      button.removeAttribute("title");
+    }}
+    button.style.removeProperty("background");
+    button.style.removeProperty("border");
+    button.style.removeProperty("box-shadow");
+    button.style.removeProperty("color");
+    button.style.removeProperty("pointer-events");
+    button.style.removeProperty("opacity");
+    button.removeAttribute("aria-label");
+  }};
+
+  const applyMarkers = () => {{
+    for (const button of document.querySelectorAll("button.download-zip-button")) {{
+      if (isInstalled(extractSongMeta(button))) {{
+        markInstalled(button);
+      }} else {{
+        unmarkInstalled(button);
+      }}
+    }}
+  }};
+
+  window.__dadApplyInstalledMarkers = applyMarkers;
+  if (!window.__dadInstalledObserver) {{
+    const observer = new MutationObserver(() => {{
+      window.requestAnimationFrame(() => window.__dadApplyInstalledMarkers?.());
+    }});
+    observer.observe(document.body, {{ childList: true, subtree: true }});
+    window.__dadInstalledObserver = observer;
+  }}
+
+  applyMarkers();
+}})();
+"""
+        self.page.runJavaScript(script)
