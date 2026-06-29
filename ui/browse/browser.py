@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from PySide6.QtCore import QTimer, QUrl, Qt, Signal
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 from PySide6.QtWebEngineCore import (
     QWebEngineDownloadRequest,
     QWebEnginePage,
@@ -63,6 +63,8 @@ class BrowseTab(QWidget):
         self.hide_installed_btn = QPushButton("Hide installed")
         self.hide_installed_btn.setCheckable(True)
         self.hide_installed_btn.toggled.connect(self._hide_installed_toggled)
+        self.low_motion_checkbox = QCheckBox("Low-Motion mode")
+        self.low_motion_checkbox.toggled.connect(self._low_motion_toggled)
         self.legend = QLabel(
             'Legend: '
             '<span style="color:#16a34a;font-weight:600;">Installed</span> '
@@ -72,6 +74,7 @@ class BrowseTab(QWidget):
         self.legend.setTextFormat(Qt.RichText)
         tools.addWidget(self.refresh_markers_btn)
         tools.addWidget(self.hide_installed_btn)
+        tools.addWidget(self.low_motion_checkbox)
         tools.addWidget(self.legend, 1)
         layout.addLayout(tools)
 
@@ -135,6 +138,9 @@ class BrowseTab(QWidget):
 
     def _hide_installed_toggled(self, checked: bool):
         self.hide_installed_btn.setText("Show all songs" if checked else "Hide installed")
+        self._sync_installed_markers()
+
+    def _low_motion_toggled(self, _checked: bool):
         self._sync_installed_markers()
 
     def _on_page_action(self, action: str, payload: str):
@@ -207,12 +213,43 @@ class BrowseTab(QWidget):
     def _sync_installed_markers(self, *_args):
         payload = json.dumps(self._installed_song_payload())
         hide_installed = "true" if self.hide_installed_btn.isChecked() else "false"
+        low_motion = "true" if self.low_motion_checkbox.isChecked() else "false"
         import_path = json.dumps(config.get_discomaps_imported_songs_path())
         script = """
 (() => {
   const installedSongs = __PAYLOAD__;
   const hideInstalled = __HIDE_INSTALLED__;
+  const lowMotion = __LOW_MOTION__;
   const configuredImportPath = __IMPORT_PATH__;
+
+  const applyLowMotionMode = () => {
+    const styleId = "dad-low-motion-style";
+    let style = document.getElementById(styleId);
+    if (lowMotion) {
+      if (!style) {
+        style = document.createElement("style");
+        style.id = styleId;
+        document.head.appendChild(style);
+      }
+      style.textContent = `
+        html, body {
+          background: #000000 !important;
+        }
+        #particle-canvas {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+        }
+      `;
+      const particleCanvas = document.getElementById("particle-canvas");
+      if (particleCanvas instanceof HTMLCanvasElement) {
+        const ctx = particleCanvas.getContext("2d");
+        ctx?.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+      }
+    } else if (style) {
+      style.remove();
+    }
+  };
 
   const normalize = (value) => (value || "")
     .toString()
@@ -497,12 +534,14 @@ class BrowseTab(QWidget):
   }
 
   maybeSeedImportPath();
+  applyLowMotionMode();
   applyMarkers();
 })();
 """
         script = (
             script.replace("__PAYLOAD__", payload)
             .replace("__HIDE_INSTALLED__", hide_installed)
+            .replace("__LOW_MOTION__", low_motion)
             .replace("__IMPORT_PATH__", import_path)
         )
         self.page.runJavaScript(script)

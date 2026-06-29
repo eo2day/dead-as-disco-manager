@@ -28,8 +28,16 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 set "REQ_HASH="
-for /f "skip=1 tokens=1" %%i in ('certutil -hashfile requirements.txt SHA256 ^| findstr /r /v "hash CertUtil"') do (
-  if not defined REQ_HASH set "REQ_HASH=%%i"
+where powershell >nul 2>nul
+if %errorlevel%==0 (
+  for /f %%i in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 'requirements.txt').Hash"') do (
+    if not defined REQ_HASH set "REQ_HASH=%%i"
+  )
+)
+if not defined REQ_HASH (
+  for /f "skip=1 tokens=1" %%i in ('certutil -hashfile requirements.txt SHA256 ^| findstr /r /v "hash CertUtil"') do (
+    if not defined REQ_HASH set "REQ_HASH=%%i"
+  )
 )
 if not defined REQ_HASH (
   echo Failed to calculate requirements.txt hash.
