@@ -66,17 +66,10 @@ class BrowseTab(QWidget):
         self.low_motion_checkbox = QCheckBox("Low-Motion mode")
         self.low_motion_checkbox.setChecked(config.get_low_motion_mode())
         self.low_motion_checkbox.toggled.connect(self._low_motion_toggled)
-        self.legend = QLabel(
-            'Legend: '
-            '<span style="color:#16a34a;font-weight:600;">Installed</span> '
-            '· <span style="color:#d97706;font-weight:600;">Update?</span> '
-            '· <span style="color:#cbd5e1;">Not installed</span>'
-        )
-        self.legend.setTextFormat(Qt.RichText)
         tools.addWidget(self.refresh_markers_btn)
         tools.addWidget(self.hide_installed_btn)
         tools.addWidget(self.low_motion_checkbox)
-        tools.addWidget(self.legend, 1)
+        tools.addStretch(1)
         layout.addLayout(tools)
 
         self.profile = QWebEngineProfile("disco-manager", self)
