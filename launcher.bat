@@ -27,7 +27,7 @@ if not exist ".venv\Scripts\python.exe" (
   )
 )
 
-for /f %%i in ('".venv\Scripts\python.exe" -c "import hashlib, pathlib; print(hashlib.sha256(pathlib.Path('requirements.txt').read_bytes()).hexdigest())"') do set "REQ_HASH=%%i"
+for /f %%i in ('".venv\Scripts\python.exe" -c "import hashlib, pathlib; print(hashlib.sha256(pathlib.Path(\"requirements.txt\").read_bytes()).hexdigest())"') do set "REQ_HASH=%%i"
 
 set "STAMP_FILE=.venv\requirements.sha256"
 set "STAMP_HASH="

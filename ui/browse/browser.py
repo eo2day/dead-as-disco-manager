@@ -311,6 +311,13 @@ class BrowseTab(QWidget):
   };
 
   const resetButton = (button) => {
+    if (
+      button.dataset.dadState === "none"
+      && !button.parentElement?.querySelector(".dad-open-folder-button")
+      && !button.hasAttribute("data-dad-open-folder")
+    ) {
+      return;
+    }
     clearOpenButton(button);
     button.dataset.dadState = "none";
     button.removeAttribute("data-dad-open-folder");
@@ -351,10 +358,18 @@ class BrowseTab(QWidget):
 
   const markInstalled = (entry, song) => {
     const button = entry.button;
+    const targetPath = song.path || "";
+    if (
+      button.dataset.dadState === "installed"
+      && button.getAttribute("data-dad-open-folder") === targetPath
+      && button.textContent?.trim() === "Installed"
+    ) {
+      return;
+    }
     storeOriginalButton(button);
     clearOpenButton(button);
     button.dataset.dadState = "installed";
-    button.dataset.dadOpenFolder = song.path || "";
+    button.dataset.dadOpenFolder = targetPath;
     button.style.setProperty("background", "#16a34a", "important");
     button.style.setProperty("border", "1px solid #15803d", "important");
     button.style.setProperty("box-shadow", "0 0 0 1px rgba(255,255,255,0.08) inset", "important");
@@ -368,6 +383,15 @@ class BrowseTab(QWidget):
 
   const markUpdate = (entry, song) => {
     const button = entry.button;
+    const targetPath = song.path || "";
+    const existingOpenButton = button.parentElement?.querySelector(".dad-open-folder-button");
+    if (
+      button.dataset.dadState === "update"
+      && button.textContent?.trim() === "Update?"
+      && existingOpenButton?.getAttribute("data-dad-open-folder") === targetPath
+    ) {
+      return;
+    }
     storeOriginalButton(button);
     const openButton = ensureOpenButton(button, song);
     button.dataset.dadState = "update";
