@@ -485,7 +485,8 @@ class BrowseTab(QWidget):
       } else {
         resetButton(button);
       }
-      entry.card.style.display = hideInstalled && state.state === "installed" ? "none" : "";
+      const shouldHide = hideInstalled && (state.state === "installed" || state.state === "update");
+      entry.card.style.display = shouldHide ? "none" : "";
     }
   };
 
