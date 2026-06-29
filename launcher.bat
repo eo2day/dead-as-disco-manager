@@ -27,7 +27,15 @@ if not exist ".venv\Scripts\python.exe" (
   )
 )
 
-for /f %%i in ('".venv\Scripts\python.exe" -c "import hashlib, pathlib; print(hashlib.sha256(pathlib.Path(\"requirements.txt\").read_bytes()).hexdigest())"') do set "REQ_HASH=%%i"
+set "REQ_HASH="
+for /f "skip=1 tokens=1" %%i in ('certutil -hashfile requirements.txt SHA256 ^| findstr /r /v "hash CertUtil"') do (
+  if not defined REQ_HASH set "REQ_HASH=%%i"
+)
+if not defined REQ_HASH (
+  echo Failed to calculate requirements.txt hash.
+  pause
+  exit /b 1
+)
 
 set "STAMP_FILE=.venv\requirements.sha256"
 set "STAMP_HASH="
